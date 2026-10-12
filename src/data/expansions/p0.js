@@ -1,0 +1,141 @@
+export const EXPANSION_P0 = [
+  {
+    phaseId: 'p0', after: 'python-data-stack', id: 'sql-databases',
+    title: 'SQL & relational databases', tag: 'Query, model and protect structured data',
+    definition: 'SQL and relational databases provide durable, transactional storage and declarative querying for users, jobs, evaluations, permissions, and application state.',
+    levels: {
+      beginner: `<p>Learn tables, rows, columns, primary keys, and relationships. Practise <code>SELECT</code>, filtering, sorting, grouping, joins, inserts, updates, and deletes.</p><p>Use parameters instead of building SQL with user strings; this prevents injection and handles escaping correctly.</p>`,
+      intermediate: `<p>Design normalised schemas, foreign keys, constraints, indexes, transactions, isolation, migrations, and connection pools. Read query plans before adding indexes blindly.</p><p>Use transactions for state changes that must succeed or fail together, such as creating a job and its audit record.</p>`,
+      expert: `<p>Understand MVCC, locks, deadlocks, replication, partitioning, online migrations, backup/restore, and tenant isolation. Tune from workload evidence and preserve correctness under concurrency.</p><p>Use row-level security or trusted query scopes where appropriate, but still test every access path.</p>`,
+    },
+    patterns: [
+      { name: 'Join', desc: 'Combines related rows through keys.', example: 'runs JOIN users ON runs.user_id = users.id' },
+      { name: 'Transaction', desc: 'Groups operations into one atomic unit.', example: 'insert job and outbox event together' },
+      { name: 'Index', desc: 'Accelerates selected lookup and ordering patterns.', example: 'tenant_id + created_at composite index' },
+      { name: 'Migration', desc: 'Versioned schema change deployed safely.', example: 'add nullable column → backfill → enforce constraint' },
+    ],
+    pitfalls: ['Using string interpolation for SQL.', 'Adding indexes without query-plan evidence.', 'Changing a large table in a blocking migration.'],
+    apply: ['Model users, runs, messages, and eval results.', 'Write joins, aggregates, and transactional updates.', 'Back up and restore the database in a test environment.'],
+    practice: [
+      { q: 'Why use a transaction?', a: 'It preserves invariants by committing related changes atomically or rolling all of them back.' },
+      { q: 'What does an index trade?', a: 'Faster reads for chosen access patterns in exchange for storage and slower writes/maintenance.' },
+    ],
+    resources: [{ label: 'PostgreSQL tutorial', url: 'https://www.postgresql.org/docs/current/tutorial.html' }],
+  },
+  {
+    phaseId: 'p0', after: 'sql-databases', id: 'data-engineering-basics',
+    title: 'Data engineering fundamentals', tag: 'Batch, streaming, schemas, quality & lineage',
+    definition: 'Data engineering builds reliable pipelines that ingest, transform, validate, version, and deliver data to applications, analytics, retrieval, and training.',
+    levels: {
+      beginner: `<p>A pipeline moves data from a source to a useful destination through explicit steps. Batch pipelines process bounded collections; streaming pipelines process events continuously.</p><p>Keep raw inputs, define schemas, and check row counts, nulls, duplicates, ranges, and freshness.</p>`,
+      intermediate: `<p>Learn ETL versus ELT, incremental loads, change-data capture, partitioning, orchestration DAGs, data contracts, idempotency, and backfills. Separate event time from processing time.</p><p>Record lineage so every dataset and model input can be traced to sources and transformations.</p>`,
+      expert: `<p>Design for late and duplicate events, schema evolution, exactly-once illusions, replay, watermarking, and multi-tenant governance. Set quality and freshness SLOs and quarantine bad data.</p><p>Choose batch or streaming from latency requirements, not fashion.</p>`,
+    },
+    patterns: [
+      { name: 'ETL/ELT', desc: 'Extract data, transform it, and load to a destination.', example: 'application events → warehouse tables' },
+      { name: 'Incremental load', desc: 'Process only new or changed records.', example: 'watermark or change-data-capture offset' },
+      { name: 'Data contract', desc: 'Schema, semantics, quality, and ownership agreement.', example: 'event fields, allowed nulls, retention, producer' },
+      { name: 'Lineage', desc: 'Trace outputs back through transformations and sources.', example: 'eval set row → cleaned table → source event' },
+    ],
+    pitfalls: ['Reprocessing without idempotency.', 'Silently accepting schema changes.', 'Building streaming infrastructure for a daily requirement.'],
+    apply: ['Build an incremental batch pipeline.', 'Add schema and quality checks.', 'Run a backfill and prove it does not duplicate data.'],
+    practice: [
+      { q: 'What makes a pipeline idempotent?', a: 'Running the same input again produces the same final state without duplicate or compounded effects.' },
+      { q: 'Why preserve raw data?', a: 'It enables audit, reprocessing, debugging, and improved transformations without reacquiring the source.' },
+    ],
+    resources: [],
+  },
+  {
+    phaseId: 'p0', after: 'rest-json', id: 'web-backend-basics',
+    title: 'Web & backend fundamentals', tag: 'Requests, servers, authentication and distributed boundaries',
+    definition: 'Backend engineering exposes application behaviour through HTTP services while managing identity, validation, state, concurrency, and dependency failures.',
+    levels: {
+      beginner: `<p>Understand clients, servers, URLs, DNS, HTTP methods, headers, cookies, status codes, and request/response bodies. Build a small API with validated input.</p><p>Authentication proves identity; authorisation decides what that identity may do.</p>`,
+      intermediate: `<p>Learn REST resource design, middleware, sessions and tokens, CORS, TLS, pagination, idempotency, timeouts, connection pooling, and dependency injection. Separate API schemas from internal models.</p><p>Do not hold web requests open for unbounded background work.</p>`,
+      expert: `<p>Design rate limits, tenant boundaries, API versioning, distributed tracing, zero-trust service identity, abuse controls, and backward-compatible evolution. Threat-model SSRF, injection, broken object authorisation, and replay.</p><p>Use contracts and failure budgets across service boundaries.</p>`,
+    },
+    patterns: [
+      { name: 'Authentication', desc: 'Establishes who the caller is.', example: 'validated session or signed access token' },
+      { name: 'Authorisation', desc: 'Checks whether the caller may perform the action.', example: 'user can read project 42' },
+      { name: 'Idempotency', desc: 'Repeated request produces one logical effect.', example: 'client-supplied key for job creation' },
+      { name: 'Middleware', desc: 'Cross-cutting logic around handlers.', example: 'auth, request ID, logging, rate limits' },
+    ],
+    pitfalls: ['Confusing authentication with permission.', 'Trusting object IDs supplied by a client.', 'Retrying mutating requests without idempotency.'],
+    apply: ['Build a typed CRUD API.', 'Add authentication and object-level authorisation tests.', 'Instrument timeout, error, and request-ID handling.'],
+    practice: [
+      { q: 'What is broken object-level authorisation?', a: 'A caller changes an object ID and accesses data they do not own because the server failed to check permission.' },
+      { q: 'Why separate API and domain models?', a: 'Public contracts evolve differently from internal state and require independent validation and compatibility.' },
+    ],
+    resources: [{ label: 'MDN HTTP overview', url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview' }],
+  },
+  {
+    phaseId: 'p0', after: 'git', id: 'linux-cli',
+    title: 'Linux, shell & developer tooling', tag: 'Navigate, automate and debug the environment',
+    definition: 'Linux and shell fluency lets AI engineers manage files, processes, permissions, environments, logs, networks, and automation on development and production systems.',
+    levels: {
+      beginner: `<p>Learn paths, files, directories, permissions, environment variables, pipes, redirection, processes, and package tools. Practise <code>pwd</code>, <code>ls</code>, <code>cd</code>, <code>mkdir</code>, <code>cp</code>, <code>mv</code>, <code>grep</code>, and <code>find</code>.</p><p>Read commands before running them—especially recursive deletion and commands copied from the internet.</p>`,
+      intermediate: `<p>Use shell scripts with strict error handling, process signals, background jobs, SSH, archives, checksums, <code>curl</code>, ports, DNS tools, logs, and resource inspection. Understand users, groups, file modes, and service accounts.</p><p>Automate repeatable setup instead of maintaining a notebook of manual commands.</p>`,
+      expert: `<p>Debug file descriptors, sockets, process trees, memory/disk pressure, namespaces, cgroups, and system calls at a practical level. Build least-privilege images and services and investigate incidents without destroying evidence.</p><p>Prefer portable, observable scripts and idempotent provisioning.</p>`,
+    },
+    patterns: [
+      { name: 'Pipe', desc: 'Streams one command’s output into another.', example: 'producer | filter | formatter' },
+      { name: 'Environment variable', desc: 'Process-level configuration inherited by children.', example: 'APP_ENV=staging' },
+      { name: 'Signal', desc: 'Notifies a process to stop, reload, or handle an event.', example: 'SIGTERM for graceful shutdown' },
+      { name: 'Permission mode', desc: 'Controls owner/group/other file access.', example: 'read-only secret for service user' },
+    ],
+    pitfalls: ['Running destructive commands with broad unresolved paths.', 'Using root when narrower permissions work.', 'Writing scripts that ignore failed commands.'],
+    apply: ['Automate project setup and checks in a script.', 'Inspect a process, port, log, and resource usage.', 'Configure a non-root service account and permissions.'],
+    practice: [
+      { q: 'What does a pipe do?', a: 'It connects one process’s standard output to another process’s standard input as a stream.' },
+      { q: 'Why handle SIGTERM?', a: 'Orchestrators use it for shutdown; handling it lets the service stop accepting work and finish or checkpoint safely.' },
+    ],
+    resources: [],
+  },
+  {
+    phaseId: 'p0', after: 'linux-cli', id: 'cloud-container-basics',
+    title: 'Containers & cloud fundamentals', tag: 'Package applications and understand managed infrastructure',
+    definition: 'Containers package processes and dependencies, while cloud platforms provide compute, storage, networking, identity, and managed services on demand.',
+    levels: {
+      beginner: `<p>A container image is an immutable filesystem and startup recipe; a container is a running isolated process. Build a small image, map a port, pass configuration, and inspect logs.</p><p>Cloud services are rented infrastructure with shared-responsibility security.</p>`,
+      intermediate: `<p>Write minimal multi-stage builds, pin dependencies, run as non-root, use volumes deliberately, and understand registries and image layers. Learn virtual networks, load balancers, object stores, managed databases, identities, regions, and availability zones.</p><p>Estimate cost before leaving resources running.</p>`,
+      expert: `<p>Secure the supply chain with scans, provenance, signatures, and base-image updates. Design least-privilege identity, private networking, egress controls, encryption, multi-zone recovery, quotas, and cost allocation.</p><p>Choose managed services by operational capability, lock-in, reliability, and total cost—not convenience alone.</p>`,
+    },
+    patterns: [
+      { name: 'Container image', desc: 'Immutable application and dependency layers.', example: 'versioned digest in registry' },
+      { name: 'Managed service', desc: 'Provider operates part of the infrastructure lifecycle.', example: 'database backups and patching' },
+      { name: 'Workload identity', desc: 'Runtime obtains scoped cloud permissions.', example: 'service reads one object bucket' },
+      { name: 'Availability zone', desc: 'Independent failure domain inside a region.', example: 'replicas across zones' },
+    ],
+    pitfalls: ['Putting secrets inside images.', 'Running containers as root unnecessarily.', 'Leaving GPUs, databases, or public endpoints unmonitored.'],
+    apply: ['Containerise a small API.', 'Deploy it with managed identity and secret storage.', 'Document network, cost, backup, and shutdown.'],
+    practice: [
+      { q: 'What is the difference between image and container?', a: 'An image is an immutable package/template; a container is a running process created from it.' },
+      { q: 'What does shared responsibility mean?', a: 'The cloud provider secures specified infrastructure layers while you remain responsible for configuration, identity, data, application, and usage.' },
+    ],
+    resources: [],
+  },
+  {
+    phaseId: 'p0', after: 'math-basics', id: 'probability-statistics',
+    title: 'Probability & statistics for AI', tag: 'Uncertainty, sampling, estimation and experiments',
+    definition: 'Probability models uncertainty, while statistics estimates properties and compares systems from finite, noisy data.',
+    levels: {
+      beginner: `<p>Learn distributions, mean, median, variance, percentiles, conditional probability, and samples versus populations. AI evaluation is always based on finite samples.</p><p>A score without sample size or uncertainty can be misleading.</p>`,
+      intermediate: `<p>Study Bayes’ rule, expectation, covariance, common distributions, confidence intervals, hypothesis tests, bootstrap, correlation, and experimental design. Use paired comparisons when two systems answer the same cases.</p><p>Understand selection bias, confounding, and why correlation is not causation.</p>`,
+      expert: `<p>Apply calibration, Bayesian and frequentist intervals, multiple-testing control, power analysis, sequential experiments, hierarchical effects, and robust statistics. Match assumptions to the data-generating process.</p><p>Report effect sizes and decision relevance, not only p-values.</p>`,
+    },
+    patterns: [
+      { name: 'Distribution', desc: 'Possible outcomes and their probabilities.', example: 'response latency or model score distribution' },
+      { name: 'Confidence interval', desc: 'Range quantifying sampling uncertainty.', example: 'bootstrap interval for paired quality delta' },
+      { name: 'Conditional probability', desc: 'Probability under known evidence.', example: 'error rate given language=Hindi' },
+      { name: 'Experiment', desc: 'Controlled comparison designed for causal inference.', example: 'randomised A/B assignment' },
+    ],
+    pitfalls: ['Treating a p-value as probability the hypothesis is true.', 'Reporting an average while tails or subgroups fail.', 'Drawing causal claims from observational correlation.'],
+    apply: ['Calculate summary statistics and percentiles.', 'Bootstrap an eval-score difference.', 'Design a powered, pre-registered A/B test.'],
+    practice: [
+      { q: 'Why use a confidence interval?', a: 'It communicates uncertainty from finite samples and whether an observed difference is precise enough for a decision.' },
+      { q: 'Why does correlation not prove causation?', a: 'A hidden variable, selection process, or reverse direction may explain the association.' },
+    ],
+    resources: [{ label: 'Seeing Theory', url: 'https://seeing-theory.brown.edu/' }],
+  },
+]
+

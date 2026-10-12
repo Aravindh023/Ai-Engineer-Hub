@@ -1,0 +1,9 @@
+node_modules/
+dist/
+dev.log
+preview.log
+
+# Secrets — never commit. Your Anthropic API key lives here.
+.env
+.env.local
+.env.*.local

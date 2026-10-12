@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>AI Engineer Field Manual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--
+  Legacy interactive widgets (tokenizer, cosine, softmax sampler, chunking,
+  ReAct trace, LangGraph, RRF, reranking...) are extracted verbatim from the
+  original single-file build. Loaded as a CLASSIC script so its top-level
+  function declarations register on window, which is exactly what the inline
+  oninput/onclick handlers inside concept bodies resolve against.
+  Regenerate with: npm run extract
+-->
+<script src="./legacy-widgets.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="module" src="/src/main.jsx"></script>
+</body>
+</html>
